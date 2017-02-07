@@ -1,0 +1,266 @@
+ START
+ EXTRN Mul,M1,Prout,Card, Div, Br, Cp, Dg, Rp, Dgall
+ ENTRY Go
+ EXTRN OPNGET, CLSGET, LIBGET, PRINTM, PRINT, Add, Sub
+ EXTRN numb,cvd, chartof
+ EMPTY sin, cos, ln, exp, sqrt, arcsin, arccos, power, var, const, func, plus, minus, multi, division, degree, end_simple
+
+Go = <OPNGET '../examples'><Br 'empty' '=' ''> <begin 'begin'>
+
+algorithm  v1 = <begin +
+			<print_title +
+			 <print_expr+
+			 <printm+
+			  <simple_all_expr+
+			   <check_error+
+			    <diff +
+			    <check_error+
+			    <printm+
+			     <parse +
+			     <check_error+
+			      <bracket +
+			      <check_error +
+			       <preParse v1> <Br 'end_simple' '=' /1/> >>>>>>>>>>> > +
+														<prout '********************************************************************************'>>
+	   		e1 = <Dgall>e1
+
+begin v1 = <check_empty_string <LIBGET>>
+	  e1 = <Dgall>e1
+
+check_empty_string ' ' = ''
+					'' = ''
+		   			v1 = <Br 'Error' '=' /0/><algorithm <Prout 'Expression: \t'><printm v1>>
+
+bracket e1')'e2 = <bracket <bk e1> e2>
+		e1'('e2 = <error_parse /0/>
+			 e1 = e1
+
+bk R e1'('e2 = e1(e2)
+		  e1 = <error_parse /0/> 
+
+parse 'D'v1':'e2 = <isExpr <chartof v1>':'e2 >
+			  '' = ''
+		   	  e1 = <error_parse /50/>
+
+check_error e1 = <check_error_ e1>
+
+check_error_ /1/e1 = ''
+			 /0/e1 = e1
+			 e1 =  <check_error_ <Cp 'Error'> e1>
+
+
+preParse 					 e1' 'e2 = <preParse e1 e2>
+				  R   e1'^+'v(D)2 e3 = <preParse e1'^'> <numb '+'v2> <preParse e3>
+         		  R   e1'^-'v(D)2 e3 = <preParse e1'^'> <numb '-'v2> <preParse e3>
+		 e1 s((D))5 v(D)2 s((D))4 e3 = <preParse e1 s5> <numb v2> <preParse s4 e3>
+		 			e1 s((D))5 v(D)2 = <preParse e1 s5> <numb v2>
+		 			v(D)2 s((D))4 e3 = <numb v2> <preParse s4 e3>
+		 					   v(D)2 = <numb v2>
+		   	  		   			  e1 = e1
+
+print_title '' = ''
+			'\t' = ''
+			'\n' = ''
+			v1 = <Prout '\nDerivative of expression:\t'> <print v1>
+			e1 = e1
+
+*выбор метки: plus or minus
+choise_label_1 '+' = /plus/
+			   '-' = /minus/
+
+*выбор метки: multi or div
+choise_label_2 '*' = /multi/
+			   '/' = /division/
+
+*выражение
+isExpr   R s(F)3':'e1 v(('^'))5 s('+-')4 e2 = /func/(<choise_label_1 s4 > ','<isExpr s3':'e1v5>','<isTerm s3':'e2>)
+        				  	   			 e1 = <isTerm e1>
+
+*слагемое
+isTerm  R s(F)3 ':'e1 s('*/')4 e2 = /func/(<choise_label_2 s4 >','<isTerm s3':'e1>','<isMultiplier s3':'e2>)
+						  	   e1 = <isMultiplier e1>
+
+*множитель
+isMultiplier 			s(F)3':'s(N)1 = /const/s(N)1
+			 			s(F)3':'e(L)1 = <cmp_var s3':'<chartof e1>>
+
+			 	s(F)3':'e(L)1'^'s(N)2 = /func/(/degree/','/const/s(N)2','<cmp_var s3':'<chartof e1>>)
+			   s(F)3':'e(L)1'^-'s(N)2 = /func/(/degree/','/const/'-'s(N)2','<cmp_var s3':'<chartof e1>>)
+
+ 			 		 s(F)3':'(e1) = <isExpr s3':'e1>
+ 			 s(F)3':'(e1)'^'s(N)2 = /func/(/degree/','/const/s(N)2','<isExpr s3':'e1>)
+ 		    s(F)3':'(e1)'^-'s(N)2 = /func/(/degree/','/const/'-'s(N)2','<isExpr s3':'e1>)
+				s(F)3':sin'(e1) = /func/(/sin/',' <isExpr s3':'e1>)
+				s(F)3':cos'(e1) = /func/(/cos/ ',' <isExpr s3':'e1>)
+				 s(F)3':ln'(e1) = /func/(/ln/ ',' <isExpr s3':'e1>)
+				s(F)3':exp'(e1) = /func/(/exp/ ',' <isExpr s3':'e1>)
+			   s(F)3':sqrt'(e1) = /func/(/sqrt/ ',' <isExpr s3':'e1>)
+			 s(F)3':arcsin'(e1) = /func/(/arcsin/',' <isExpr s3':'e1>)
+		   	 s(F)3':arccos'(e1) = /func/(/arccos/ ',' <isExpr s3':'e1>)
+
+ 				 *s(F)3':'(e1 = <error_parse /0/>
+ 			   *s(F)3':'e1)e2 = <error_parse /0/>
+ 				 s(F)3':'e1'^'s((N))2 = <error_parse /30/>
+ 				 		s(F)3':'v2(e1) = <error_parse /2/>
+ 				 		   e1 = <error_parse /4/>
+
+
+*сравнение двух символов меток - переменных
+cmp_var s1':'s1 = /var/s1
+		s1':'s2 = /const/s2
+			 e1 = e1
+
+*непосредственно дифференциирование
+diff /func/(/plus/','v1',' v2) = /func/(/plus/','<diff v1>','<diff v2>) 
+	 /func/(/minus/','v1',' v2) = /func/(/minus/','<diff v1>','<diff v2>) 
+	 /func/(/multi/','v1',' v2) = /func/(/plus/',' /func/(/multi/ ',' <diff v1>','v2) ',' /func/(/multi/','v1','<diff v2>))
+	 /func/(/division/','v1',' v2) = /func/(/division/','/func/(/minus/',' /func/(/multi/',' <diff v1> ',' v2) ',' /func/(/multi/',' v1 ',' <diff v2>)) ',' /func/(/multi/',' v2 ',' v2))
+	 /func/(/degree/','/const/ v1',' v2) = /func/(/multi/',' /const/ v1 ',' /func/(/degree/',' /const/<Add (v1) '-'/1/> ',' v2))
+	 /func/(/sin/','v1) = /func/(/cos/','v1)
+	 /func/(/cos/','v1) = /func/(/multi/ ',' /func/(/sin/','v1) ','/const/ '-'/1/)
+	 /func/(/ln/','v1)  = /func/(/division/',' /const//1/ ',' v1)
+	 /func/(/exp/','v1) = /func/(/multi/ ','<diff v1>',' /func/(/exp/','v1) )
+	 /func/(/sqrt/','v1) = /func/(/multi/ ',' /func/(/division/',' /const//1/ ',' /func/(/multi/ ',' /func/(/sqrt/','v1) ',' /const//2/)) ',' <diff v1>)
+	 /func/(/arcsin/','v1) = /func/ (/multi/ ','/func/(/division/ ',' /const//1/ ',' /func/(/sqrt/',' /func/(/minus/','/const//1/ ',' /func/(/multi/','v1',' v1) ))) ',' <diff v1>)
+	 /func/(/arccos/','v1) = /func/(/multi/',' /const/'-'/1/ ',' <diff /func/(/arcsin/','v1)>)
+	 /const/v1 = /const//0/
+	 /var/v1 = /const//1/
+	 e1 = e1
+
+
+
+*печать результата на экран
+print_expr 
+		   /func/(/plus/','v1',' v2) = <print_expr v1> '+' <print_expr v2>
+		   /func/(/minus/','v1',' v2) = <print_expr v1> '-' <print_expr v2>
+
+		   /func/(/multi/','v1',' v2) = <print_after_mul v1> '*' <print_after_mul v2>
+		   /func/(/division/','v1',' v2) = <print_after_div v1> '/' <print_after_div v2>
+		   /func/(/degree/',' v1 ',' /var/ v2) = <print_expr /var/v2> '^' <print_expr v1>
+		   /func/(/degree/',' v1 ',' /const/ v2) = <print_expr /const/v2> '^' <print_expr v1>
+ 		   /func/(/degree/',' v1 ',' v2) = '('<print_expr v2> ')^' <print_expr v1>
+ 		       /func/(/sin/','v1) = 'sin('<print_expr v1>')'
+			   /func/(/cos/','v1) = 'cos('<print_expr v1>')'
+			   /func/(/ln/','v1)  = 'ln('<print_expr v1>')'
+			   /func/(/exp/','v1) = 'exp('<print_expr v1>')'
+			  /func/(/sqrt/','v1) ='sqrt('<print_expr v1>')'
+			/func/(/arcsin/','v1) = 'arcsin('<print_expr v1>')'
+			/func/(/arccos/','v1) = 'arccos('<print_expr v1>')'
+						/const/'-'v1 = '(-'v1')'
+						'-'/const/v1 = '-'v1    
+						/const/v1 = v1
+					 	  /var/v1 = v1
+					 	  	   e1 = e1
+
+print_after_div    /func/(/plus/','v1',' v2) = '('<print_expr v1> '+' <print_expr v2>')'
+				   /func/(/minus/','v1',' v2) = '('<print_expr v1> '-' <print_expr v2>')'
+				   /func/(/multi/','v1',' v2) = '('<print_after_mul v1> '*' <print_after_mul v2>')'
+				   /func/(/division/','v1',' v2) = '('<print_after_div v1> '/' <print_after_div v2>')'
+				   /func/(/degree/',' v1 ',' /var/ v2) = <print_expr v2>'^' <print_expr v1>
+		 		   /func/(/degree/',' v1 ',' v2) = '('<print_expr v2>')^' <print_expr v1>
+		 		       /func/(/sin/','v1) = 'sin('<print_expr v1>')'
+					   /func/(/cos/','v1) = 'cos('<print_expr v1>')'
+					   /func/(/ln/','v1)  = 'ln('<print_expr v1>')'
+					   /func/(/exp/','v1) = 'exp('<print_expr v1>')'
+					  /func/(/sqrt/','v1) ='sqrt('<print_expr v1>')'
+					/func/(/arcsin/','v1) = 'arcsin('<print_expr v1>')'
+					/func/(/arccos/','v1) = 'arccos('<print_expr v1>')'
+								/const/'-'v1 = '(-'v1')'
+								'-'/const/v1 = '-'v1  
+								/const/v1 = v1
+							 	  /var/v1 = v1
+							 	  	   e1 = e1
+
+print_after_mul    /func/(/plus/','v1',' v2) = '('<print_expr v1> '+' <print_expr v2>')'
+				   /func/(/minus/','v1',' v2) = '('<print_expr v1> '-' <print_expr v2>')'
+				   /func/(/multi/','v1',' v2) = <print_after_mul v1> '*' <print_after_mul v2>
+				   /func/(/division/','v1',' v2) = '('<print_expr v1> '/' <print_expr v2>')'
+				   /func/(/degree/',' v1 ',' /var/ v2) = <print_expr v2>'^' <print_expr v1>
+		 		   /func/(/degree/',' v1 ',' v2) = '('<print_expr v2>')^' <print_expr v1>
+		 		       /func/(/sin/','v1) = 'sin('<print_expr v1>')'
+					   /func/(/cos/','v1) = 'cos('<print_expr v1>')'
+					   /func/(/ln/','v1)  = 'ln('<print_expr v1>')'
+					   /func/(/exp/','v1) = 'exp('<print_expr v1>')'
+					  /func/(/sqrt/','v1) ='sqrt('<print_expr v1>')'
+					/func/(/arcsin/','v1) = 'arcsin('<print_expr v1>')'
+					/func/(/arccos/','v1) = 'arccos('<print_expr v1>')'
+								/const/'-'v1 = '(-'v1')'
+								'-'/const/v1 = '-'v1
+								/const/v1 = v1  
+							 	  /var/v1 = v1
+							 	  	   e1 = e1
+
+simple_all_expr /end_simple/e1 = e1
+				e1 = <simple_all_expr <check_end <Rp 'end_simple' '=' /1/> <simple_expr e1>> >
+	
+
+check_end   /1/ = /end_simple/<Dg 'curr'>
+			/0/ = <Dg 'curr'>
+			e1 = <Br 'curr' '=' e1> <check_end <Cp 'end_simple'>>
+
+*упрощение результата
+simple_expr /func/(/plus/','/const/ /0/ ',' v1) = <simple_expr v1> <Rp 'end_simple' '=' /0/>
+			/func/(/plus/','v1 ',' v1) = /func/(/multi/','/const/ /2/ ',' v1) <Rp 'end_simple' '=' /0/>
+		   /func/(/plus/ ',' v1 ',' /const/ /0/) = <simple_expr v1> <Rp 'end_simple' '=' /0/>
+		   */func/(/minus/ ','/const/ /0/ ',' v(('-'))1) = '-'<simple_expr v1> <Rp 'end_simple' '=' /0/>
+		   */func/(/minus/ ','/const/ /0/ ',' '-'v1) = <simple_expr v1> <Rp 'end_simple' '=' /0/>
+		   /func/(/minus/ ','/const/ /0/ ',' /const/'-'v1) = /const/ v1 <Rp 'end_simple' '=' /0/>
+		   /func/(/minus/ ','/const/ /0/ ',' /const/v1) = /const/'-'v1 <Rp 'end_simple' '=' /0/>
+		   /func/(/minus/ ',' v1 ',' /const/ /0/) = <simple_expr v1> <Rp 'end_simple' '=' /0/>
+		   */func/(/minus/ ','v1',' '-'v2) = /func/(/plus/ ','<simple_expr v1>',' <simple_expr v2>) <Rp 'end_simple' '=' /0/>
+
+		   /func/(/minus/ ',' v1 ',' v1) = /const//0/ <Rp 'end_simple' '=' /0/>
+
+		   /func/(/degree/',' /const/ /0/ ',' v2) = /const//1/ <Rp 'end_simple' '=' /0/>
+		   /func/(/degree/',' /const/ /1/ ',' v2) = v2 <Rp 'end_simple' '=' /0/>
+
+		   /func/(/plus/','/const/ e('+-')1 v(N)2 ',' /const/ e('+-')3 v(N)4) = /const/ <Add (e1v2) e3v4> <Rp 'end_simple' '=' /0/>
+		   /func/(/minus/','/const/ e('+-')1 v(N)2 ',' /const/ e('+-')3 v(N)4) = /const/ <Sub (e1v2) e3v4> <Rp 'end_simple' '=' /0/>
+		   /func/(/multi/','/const/ e('+-')1 v(N)2 ',' /const/ e('+-')3 v(N)4) = /const/ <Mul (e1v2) e3v4> <Rp 'end_simple' '=' /0/>
+
+		   /func/(/multi/','/const/ /0/ ',' v2) = /const/ /0/ <Rp 'end_simple' '=' /0/>
+		   /func/(/multi/','/const/ /1/ ',' v2) = <simple_expr v2> <Rp 'end_simple' '=' /0/>
+		   /func/(/multi/',' v2 ',' /const/ /0/ ) = /const/ /0/ <Rp 'end_simple' '=' /0/>
+		   /func/(/multi/',' v2 ','/const/ /1/ ) = <simple_expr v2> <Rp 'end_simple' '=' /0/>
+		   /func/(/multi/',' v1 ','/func/(/division/',' /const//1/ ',' v2) ) = /func/(/division/',' v1 ','v2) <Rp 'end_simple' '=' /0/>
+
+		   */func/(/division/','v2',' /const/ /0/ ) = <error_parse /60/> 
+		   /func/(/division/','/const/ /0/ ',' v2) = /const//0/ <Rp 'end_simple' '=' /0/>
+
+		   /func/(/division/','/func/(/multi/',' v1 ',' v2) ',' v2) = v1 <Rp 'end_simple' '=' /0/>
+		   /func/(/division/','/func/(/multi/',' v2 ',' v1) ',' v2) = v1 <Rp 'end_simple' '=' /0/>
+
+		   /func/(/division/ ',' v2',' /func/(/multi/',' v1 ',' v2)) = /func/(/division/ ',' /const//1/',' v1) <Rp 'end_simple' '=' /0/>
+		   /func/(/division/ ',' v2',' /func/(/multi/',' v2 ',' v1)) = /func/(/division/ ',' /const//1/',' v1) <Rp 'end_simple' '=' /0/>
+
+		   /func/(/division/','/const/ e('+-')1 v(N)2 ',' /const/ e('+-')3 v(N)4) = /const/ <Div (e1v2) e3v4> <Rp 'end_simple' '=' /0/>
+
+		   /func/(/cos/','/const/ /0/) = /const//1/ <Rp 'end_simple' '=' /0/>
+		   /func/(/sin/','/const/ /0/) = /const//0/ <Rp 'end_simple' '=' /0/>
+		   /func/(/ln/','/const/ /1/) = /const//0/ <Rp 'end_simple' '=' /0/>
+		   /func/(/exp/','/const/ /0/) = /const//1/ <Rp 'end_simple' '=' /0/>
+		   /func/(/sqrt/','/const/ /0/) = /const//0/ <Rp 'end_simple' '=' /0/>
+		   /func/(/arcsin/','/const/ /0/) = /const//0/ <Rp 'end_simple' '=' /0/>
+		   /func/(/arccos/','/const/ /1/) = /const//0/ <Rp 'end_simple' '=' /0/>
+
+		   /func/(e1 ',' v2 ',' v3) = /func/(e1 ',' <simple_expr v2>',' <simple_expr v3>)
+		   /func/(e1 ',' v2) = /func/(e1 ',' <simple_expr v2>)  
+		   e1 = e1
+
+
+error_type_parse 
+			/0/ = <prout '\nError: Нарушен баланс открывающих и закрывающих скобок'><Rp 'Error' '=' /1/>
+			/1/ = <prout '\nError: Пропущен знак операции или её операнд'><Rp 'Error' '=' /1/>
+			/2/ = <prout '\nError: Употребление неизвестной функции'><Rp 'Error' '=' /1/>
+			/3/ = <prout '\nError: Неправильная запись выражения со степенью'><Rp 'Error' '=' /1/>
+			/30/ = <prout '\nError: Неправильная запись выражения со степенью: степень - не целое число'><Rp 'Error' '=' /1/>
+			/4/ = <prout '\nError: Неверная запись множителя'><Rp 'Error' '=' /1/>
+			/50/ = <prout '\nError: Неверный формат ввода: не указана переменная дифференциирования'><Rp 'Error' '=' /1/>
+			/60/ = <prout '\nError: Между прочим, на 0 делить нельзя'><Rp 'Error' '=' /1/>
+			e1 = e1
+
+error_parse  /1/s(N)1 = ''
+			 /0/s(N)1 = <error_type_parse s1>
+			 e1 =  <error_parse <Cp 'Error'> e1>
+
+ END
